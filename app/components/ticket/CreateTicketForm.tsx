@@ -5,6 +5,9 @@ import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { createTicket } from '@/lib/api';
 import { TicketCreationRequest } from '@/types/ticket';
+import { TicketCreationResponse } from '@/types/ticket';
+import { TicketDetails } from './TicketDetails';
+
 
 const TICKET_TYPES = [
   "SINGLE",
@@ -41,10 +44,8 @@ export const CreateTicketForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [ticketInfo, setTicketInfo] = useState<{
-    ticketId: string;
-    ticketNumber: string;
-  } | null>(null);
+  const [ticketInfo, setTicketInfo] = useState<TicketCreationResponse | null>(null);
+  const [expirationMode, setExpirationMode] = useState<'date' | 'window'>('date');
 
   // Add or remove passkeys
   const addPasskey = () => {
@@ -117,26 +118,30 @@ export const CreateTicketForm = () => {
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
+  e.preventDefault();
 
-    // Frontend validation: require max_views for GROUP and BROADCAST
-    if (
-      isMaxViewsRequired(formData.ticket_type) &&
-      (formData.max_views === undefined || formData.max_views === null)
-    ) {
-      setError(`max_views is required for ticket type ${formData.ticket_type}`);
-      setIsSubmitting(false);
-      return;
-    }
+  // Validate expiration settings
+  if (expirationMode === 'date' && !formData.expires_at) {
+    setError('Please set an expiration date');
+    return;
+  }
+
+  if (expirationMode === 'window' && (!formData.open_from || !formData.open_until)) {
+    setError('Please set both open from and until dates');
+    return;
+  }
+
+  // Prepare payload based on selected mode
+  const payload = {
+    ...formData,
+    expires_at: expirationMode === 'date' ? formData.expires_at : undefined,
+    open_from: expirationMode === 'window' ? formData.open_from : undefined,
+    open_until: expirationMode === 'window' ? formData.open_until : undefined
+  };
 
     try {
-      const data = await createTicket(formData);
-      setTicketInfo({
-        ticketId: data.ticketId,
-        ticketNumber: data.ticketNumber,
-      });
+      const response = await createTicket(payload);
+      setTicketInfo(response); // Now stores full response
       setSuccess(true);
 
       // Reset form to default
@@ -227,15 +232,66 @@ export const CreateTicketForm = () => {
         placeholder="Enter salt (optional)"
       />
 
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Expiration Settings
+        </label>
+        <div className="flex space-x-4">
+          <button
+            type="button"
+            onClick={() => setExpirationMode('date')}
+            className={`px-4 py-2 rounded-md ${
+              expirationMode === 'date' 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-200 text-gray-700'
+            }`}
+          >
+            Set Expiration Date
+          </button>
+          <button
+            type="button"
+            onClick={() => setExpirationMode('window')}
+            className={`px-4 py-2 rounded-md ${
+              expirationMode === 'window' 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-200 text-gray-700'
+            }`}
+          >
+            Set Access Window
+          </button>
+        </div>
+      </div>
+
       {/* Expiration Date */}
-      <Input
-        label="Expiration Date"
-        name="expires_at"
-        type="datetime-local"
-        value={(formData.expires_at ?? '').slice(0, 16)}
-        onChange={handleChange}
-        required
-      />
+      {expirationMode === 'date' ? (
+        <Input
+          label="Expiration Date"
+          name="expires_at"
+          type="datetime-local"
+          value={(formData.expires_at ?? '').slice(0, 16)}
+          onChange={handleChange}
+          required
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Input
+            label="Open From"
+            name="open_from"
+            type="datetime-local"
+            value={(formData.open_from ?? '').slice(0, 16)}
+            onChange={handleChange}
+            required
+          />
+          <Input
+            label="Open Until"
+            name="open_until"
+            type="datetime-local"
+            value={(formData.open_until ?? '').slice(0, 16)}
+            onChange={handleChange}
+            required
+          />
+        </div>
+      )}
 
       {/* Ticket Type & Max Views */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -297,16 +353,15 @@ export const CreateTicketForm = () => {
 
       {/* Success Message */}
       {success && ticketInfo && (
-        <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <h3 className="text-lg font-medium text-green-800">Ticket Created Successfully!</h3>
-          <p className="text-sm text-green-700 mt-2">
-            <span className="font-semibold">Ticket ID:</span> {ticketInfo.ticketId}
-          </p>
-          <p className="text-sm text-green-700">
-            <span className="font-semibold">Ticket Number:</span> {ticketInfo.ticketNumber}
-          </p>
-        </div>
+        <TicketDetails 
+          ticket={ticketInfo}
+          onClose={() => {
+            setSuccess(false);
+            setTicketInfo(null);
+          }}
+        />
       )}
+
 
       {/* Error Message */}
       {error && (
