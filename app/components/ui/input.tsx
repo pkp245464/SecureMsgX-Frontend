@@ -10,6 +10,7 @@ interface InputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
   required?: boolean;
+  className?: string;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -19,11 +20,12 @@ export const Input: React.FC<InputProps> = ({
   value,
   onChange,
   placeholder = "",
-  required = false
+  required = false,
+  className = ""
 }) => {
   return (
-    <div className="mb-4">
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+    <div className={`mb-5 ${className}`}>
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
         {label}
       </label>
       <input
@@ -34,7 +36,7 @@ export const Input: React.FC<InputProps> = ({
         onChange={onChange}
         placeholder={placeholder}
         required={required}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
       />
     </div>
   );

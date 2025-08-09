@@ -2,6 +2,7 @@
 import React from 'react';
 import { TicketCreationResponse } from '@/types/ticket';
 import { Button } from '@/app/components/ui/button';
+import { formatDate, calculateDuration, formatTimeRange } from '@/app/utils/timeUtils';
 
 interface TicketDetailsProps {
   ticket: TicketCreationResponse;
@@ -10,40 +11,42 @@ interface TicketDetailsProps {
 
 export const TicketDetails: React.FC<TicketDetailsProps> = ({ ticket, onClose }) => {
   // Format dates for display
+  const duration = calculateDuration(ticket.open_from, ticket.open_until);
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Not specified';
     return new Date(dateString).toLocaleString();
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-      {/* Header */}
-      <div className="bg-blue-600 px-6 py-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-xl font-bold text-white">Ticket Created Successfully!</h3>
-          {onClose && (
-            <button 
-              onClick={onClose}
-              className="text-white hover:text-blue-200"
-              aria-label="Close"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-      </div>
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-3xl mx-auto">
 
+      {/* Header */}
+      <div className="bg-primary-600 px-6 py-4 flex justify-between items-center">
+        <h3 className="text-xl font-bold text-white">Secure Ticket Created</h3>
+        {onClose && (
+          <button 
+            onClick={onClose}
+            className="text-white hover:text-primary-200 text-2xl"
+            aria-label="Close"
+          >
+            &times;
+          </button>
+        )}
+      </div>
+      
       {/* Body */}
       <div className="p-6 space-y-6">
         {/* Basic Info */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <h4 className="text-sm font-medium text-gray-500">Ticket ID</h4>
-            <p className="mt-1 text-sm font-mono break-all">{ticket.ticketId}</p>
-          </div>
-          <div>
-            <h4 className="text-sm font-medium text-gray-500">Ticket Number</h4>
-            <p className="mt-1 text-sm font-mono">{ticket.ticketNumber}</p>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="flex justify-between">
+            <div>
+              <h4 className="text-xs font-medium text-gray-500">Ticket ID</h4>
+              <p className="mt-1 text-sm font-mono break-all">{ticket.ticketId}</p>
+            </div>
+            <div>
+              <h4 className="text-xs font-medium text-gray-500">Ticket Number</h4>
+              <p className="mt-1 text-sm font-mono">{ticket.ticketNumber}</p>
+            </div>
           </div>
         </div>
 
@@ -86,56 +89,52 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({ ticket, onClose })
         </div>
 
         {/* Security Info */}
-        <div className="border-t border-gray-200 pt-4">
-          <h4 className="text-sm font-medium text-gray-500">Security Details</h4>
-          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h5 className="text-xs font-medium text-gray-400">Encryption</h5>
-              <p className="text-sm">{ticket.encryption_algo}</p>
-            </div>
-            <div>
-              <h5 className="text-xs font-medium text-gray-400">Salt</h5>
-              <p className="text-sm font-mono break-all">{ticket.salt || 'None'}</p>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h4 className="text-sm font-medium text-gray-500 mb-2">Encryption</h4>
+          <p className="text-lg font-bold text-primary-600">{ticket.encryption_algo}</p>
         </div>
+        
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h4 className="text-sm font-medium text-gray-500 mb-2">Salt</h4>
+          <p className="text-lg font-mono break-all">{ticket.salt || 'None'}</p>
+        </div>
+      </div>
 
         {/* Passkeys */}
         {ticket.passkey && ticket.passkey.length > 0 && (
-          <div className="border-t border-gray-200 pt-4">
-            <h4 className="text-sm font-medium text-gray-500">Passkeys</h4>
-            <div className="mt-2 space-y-2">
-              {ticket.passkey.map((pk, index) => (
-                <div key={index} className="flex items-center space-x-4">
-                  <div className="w-8 text-sm text-gray-400">#{index + 1}</div>
-                  <div className="flex-1">
-                    <p className="text-sm font-mono break-all">{pk.passkey}</p>
-                    <p className="text-xs text-gray-400">Order: {pk.key_order}</p>
-                  </div>
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h4 className="text-sm font-medium text-gray-500 mb-3">Passkeys</h4>
+          <div className="space-y-3">
+            {ticket.passkey.map((pk, index) => (
+              <div key={index} className="flex items-center space-x-3 bg-white p-3 rounded-md">
+                <div className="bg-primary-100 text-primary-800 rounded-full w-8 h-8 flex items-center justify-center">
+                  {index + 1}
                 </div>
-              ))}
-            </div>
+                <div className="flex-1">
+                  <p className="text-sm font-mono break-all">{pk.passkey}</p>
+                  <p className="text-xs text-gray-500">Order: {pk.key_order}</p>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
         {/* Actions */}
-        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-          <Button 
-            variant="secondary" 
-            onClick={() => navigator.clipboard.writeText(ticket.ticketNumber)}
-          >
-            Copy Ticket Number
-          </Button>
-          <Button 
-            variant="primary"
-            onClick={() => {
-              navigator.clipboard.writeText(JSON.stringify(ticket, null, 2));
-            }}
-          >
-            Copy Full Details
-          </Button>
-        </div>
+         <div className="flex justify-center space-x-4 pt-4">
+        <Button 
+          variant="secondary" 
+          onClick={() => navigator.clipboard.writeText(ticket.ticketNumber)}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+            <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+          </svg>
+          Copy Ticket Number
+        </Button>
       </div>
     </div>
+  </div>
   );
 };

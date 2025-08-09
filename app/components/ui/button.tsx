@@ -8,6 +8,7 @@ interface ButtonProps {
   type?: "button" | "submit" | "reset";
   variant?: "primary" | "secondary";
   disabled?: boolean;
+  className?: string;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -15,22 +16,23 @@ export const Button: React.FC<ButtonProps> = ({
   onClick,
   type = "button",
   variant = "primary",
-  disabled = false
+  disabled = false,
+  className = ""
 }) => {
-  const baseClasses = "px-6 py-3 rounded-lg font-medium transition-all";
+  const baseClasses = "px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center";
   
   const variantClasses = variant === "primary" 
-    ? "bg-blue-600 hover:bg-blue-700 text-white" 
-    : "bg-gray-200 hover:bg-gray-300 text-gray-800";
-
-  const disabledClasses = disabled ? "opacity-50 cursor-not-allowed" : "";
+    ? "bg-primary-600 hover:bg-primary-700 text-white shadow-button" 
+    : "bg-white border border-gray-300 hover:border-primary-300 text-gray-700 hover:text-primary-600";
+  
+  const disabledClasses = disabled ? "opacity-60 cursor-not-allowed" : "transform hover:-translate-y-0.5";
 
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`${baseClasses} ${variantClasses} ${disabledClasses}`}
+      className={`${baseClasses} ${variantClasses} ${disabledClasses} ${className}`}
     >
       {children}
     </button>

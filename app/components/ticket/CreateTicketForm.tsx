@@ -47,6 +47,13 @@ export const CreateTicketForm = () => {
   const [ticketInfo, setTicketInfo] = useState<TicketCreationResponse | null>(null);
   const [expirationMode, setExpirationMode] = useState<'date' | 'window'>('date');
 
+  // Add this helper function at the top
+  const toUTCISOString = (localDatetime: string) => {
+    if (!localDatetime) return '';
+    const date = new Date(localDatetime);
+    return date.toISOString();
+  };
+
   // Add or remove passkeys
   const addPasskey = () => {
     if (formData.passkeys.length < 10) {
@@ -80,14 +87,11 @@ export const CreateTicketForm = () => {
         if (maxViewsNum > 1_000_000_000) maxViewsNum = 1_000_000_000;
         setFormData({ ...formData, max_views: maxViewsNum });
       }
-    } else if (name === 'expires_at') {
-      let isoDate = value;
-      if (value.length === 10) {
-        isoDate = value + 'T23:59:59Z';
-      }
-      setFormData({ ...formData, expires_at: isoDate });
+    } else if (name === 'expires_at' || name === 'open_from' || name === 'open_until') {
+    // Convert to UTC ISO format
+    setFormData({ ...formData, [name]: toUTCISOString(value) });
     } else if (name === 'ticket_type') {
-      const newType = value as TicketCreationRequest['ticket_type'];
+    const newType = value as TicketCreationRequest['ticket_type'];
 
       // Set fixed max_views for SINGLE and SECURE_SINGLE
       let newMaxViews = formData.max_views;
@@ -119,6 +123,9 @@ export const CreateTicketForm = () => {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
+  setIsSubmitting(true);
+  setError(null); // Reset error state
+  setSuccess(false); // Reset success state
 
   // Validate expiration settings
   if (expirationMode === 'date' && !formData.expires_at) {
@@ -139,23 +146,25 @@ export const CreateTicketForm = () => {
     open_until: expirationMode === 'window' ? formData.open_until : undefined
   };
 
-    try {
-      const response = await createTicket(payload);
-      setTicketInfo(response); // Now stores full response
-      setSuccess(true);
+  try {
+    const response = await createTicket(payload);
+    setTicketInfo(response); // Now stores full response
+    setSuccess(true);
 
-      // Reset form to default
-      const defaultType = 'GROUP';
-      setFormData({
-        message_content: '',
-        encryption_algo: 'AES_256',
-        passkeys: ['', ''],
-        salt: '',
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        ticket_type: defaultType,
-        max_views: 10,
-        allow_replies: isRepliesAllowed(defaultType),
-      });
+    // Reset form to default
+    const defaultType = 'GROUP';
+    setFormData({
+      message_content: '',
+      encryption_algo: 'AES_256',
+      passkeys: ['', ''],
+      salt: '',
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      ticket_type: defaultType,
+      max_views: 10,
+      allow_replies: isRepliesAllowed(defaultType),
+    });
+      // setTicketInfo(null);
+      // setError(null); 
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Failed to create ticket. Please try again.');
     } finally {
