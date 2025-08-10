@@ -6,6 +6,14 @@ import axios from 'axios';
 // Matches backend TicketType enum
 import type { TicketCreationRequest, TicketCreationResponse, TicketCreationResponseBackend, UnifiedViewRequest, ViewTicketResponse } from '@/types/ticket';
 
+// Define ConversationNode type (adjust fields as needed or import from your types)
+export type ConversationNode = {
+  replyId: string;
+  decryptedContent: string;
+  createdAt: string;
+  replies: ConversationNode[];
+};
+
 // const API_URL = "http://3.91.186.101:8083"; // original API URL
 const API_URL = "http://localhost:8083";  // added for local development
 
@@ -48,12 +56,12 @@ export const createTicket = async (
 };
 
 export const viewTicket = async (
-  request: UnifiedViewRequest
+  data: UnifiedViewRequest
 ): Promise<ViewTicketResponse> => {
   try {
     const requestPayload = {
-      ticket_number: request.ticketNumber,
-      passkeys: request.passkeys.map(p => ({
+      ticket_number: data.ticketNumber,
+      passkeys: data.passkeys.map(p => ({
         order: p.order,
         value: p.value
       }))
@@ -69,8 +77,18 @@ export const viewTicket = async (
       }
     );
 
-    // Transform snake_case backend fields to camelCase
+    // Transform the entire response including nested conversation
+    const transformConversation = (nodes: any[]): ConversationNode[] => {
+      return nodes.map(node => ({
+        replyId: node.reply_id,
+        decryptedContent: node.decrypted_content,
+        createdAt: node.created_at,
+        replies: node.replies ? transformConversation(node.replies) : []
+      }));
+    };
+
     const responseData = response.data as any;
+
     return {
       ticketNumber: responseData.ticket_number,
       decryptedContent: responseData.decrypted_content,
@@ -78,10 +96,10 @@ export const viewTicket = async (
       openUntil: responseData.open_until,
       maxViews: responseData.max_views,
       remainingViews: responseData.remaining_views,
-      ticketStatus: responseData.ticket_status, // This was missing
+      ticketStatus: responseData.ticket_status,
       readAt: responseData.read_at,
       securityWarning: responseData.security_warning,
-      conversation: responseData.conversation || []
+      conversation: responseData.conversation ? transformConversation(responseData.conversation) : []
     };
   } catch (error: any) {
     if (error.response) {
