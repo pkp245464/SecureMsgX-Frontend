@@ -2,7 +2,16 @@
 
 export const formatDate = (dateString?: string) => {
   if (!dateString) return 'Not specified';
-  return new Date(dateString).toLocaleString();
+  
+  const date = new Date(dateString);
+  return date.toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZoneName: 'short'
+  });
 };
 
 export const calculateDuration = (start?: string, end?: string) => {

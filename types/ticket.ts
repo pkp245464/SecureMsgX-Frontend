@@ -84,3 +84,39 @@ export interface TicketCreationResponseBackend {
   count_views?: number;
   created_at?: string;
 }
+
+
+// for the passkey entry
+export interface PasskeyEntry {
+  order: number;
+  value: string;
+}
+
+// Request body for unified view
+export interface UnifiedViewRequest {
+  ticketNumber: string;
+  passkeys: PasskeyEntry[];
+}
+
+//view ticket response
+export interface ViewTicketResponse {
+  ticketNumber: string;
+  decryptedContent?: string;
+  openFrom?: string;
+  openUntil?: string;
+  maxViews?: number;
+  remainingViews?: number;
+  ticketStatus?: string;  // Make sure this exists
+  readAt?: string;
+  securityWarning?: string;
+  conversation?: ConversationNode[];
+}
+
+
+// for the conversation node
+export interface ConversationNode {
+  replyId: string;
+  decryptedContent: string;
+  createdAt: string;
+  replies: ConversationNode[];
+}
