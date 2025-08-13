@@ -44,6 +44,12 @@ export default function RootLayout({
                 >
                   View Ticket
                 </Link>
+              <Link
+                href="/reply-ticket"
+                className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-primary-600 transition"
+              >
+                Reply to Ticket
+              </Link>
                 <Link
                   href="/api-metrics"
                   className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-primary-600 transition"

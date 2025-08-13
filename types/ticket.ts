@@ -106,7 +106,7 @@ export interface ViewTicketResponse {
   openUntil?: string;
   maxViews?: number;
   remainingViews?: number;
-  ticketStatus?: string;  // Make sure this exists
+  ticketStatus?: string; 
   readAt?: string;
   securityWarning?: string;
   conversation?: ConversationNode[];
@@ -119,4 +119,18 @@ export interface ConversationNode {
   decryptedContent: string;
   createdAt: string;
   replies: ConversationNode[];
+}
+
+// Request body for posting a reply
+export interface PostReplyRequest {
+  ticketNumber: string;
+  passkeys: PasskeyEntry[];
+  content: string;
+  parentReplyId?: string;
+}
+
+// Response body for posting a reply
+export interface PostReplyResponse {
+  replyId: string;
+  status: string;
 }

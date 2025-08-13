@@ -4,7 +4,14 @@ import axios from 'axios';
 
 // types/ticket.ts
 // Matches backend TicketType enum
-import type { TicketCreationRequest, TicketCreationResponse, TicketCreationResponseBackend, UnifiedViewRequest, ViewTicketResponse } from '@/types/ticket';
+import type { TicketCreationRequest, 
+  TicketCreationResponse, 
+  TicketCreationResponseBackend,
+  UnifiedViewRequest,
+  ViewTicketResponse ,
+  PostReplyRequest,
+  PostReplyResponse
+} from '@/types/ticket';
 
 // Define ConversationNode type (adjust fields as needed or import from your types)
 export type ConversationNode = {
@@ -111,5 +118,42 @@ export const viewTicket = async (
       );
     }
     throw new Error("Network error while accessing ticket");
+  }
+};
+
+// Update the postReply function to return the response data
+export const postReply = async (data: PostReplyRequest): Promise<PostReplyResponse> => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/doors-of-durin/sigil-scrolls/replies`,
+      {
+        ticket_number: data.ticketNumber, // matches backend expectation
+        passkeys: data.passkeys.map(p => ({
+          order: p.order,
+          value: p.value
+        })),
+        content: data.content,
+        parent_reply_id: data.parentReplyId // matches backend expectation
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    // Transform response to match our frontend types
+    const responseData = response.data as { parent_reply_id: string; status: string };
+    return {
+      replyId: responseData.parent_reply_id,
+      status: responseData.status
+    };
+  } catch (error: any) {
+    if (error.response) {
+      console.error("Post reply error:", error.response.data);
+      // Forward the backend error message if available
+      throw error;
+    }
+    throw new Error("Network error while posting reply");
   }
 };
