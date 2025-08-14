@@ -3,7 +3,8 @@
 import React from 'react';
 
 interface InputProps {
-  label: string;
+  id?: string;
+  label?: string;
   name: string;
   type?: string;
   value: string | number;
@@ -14,6 +15,7 @@ interface InputProps {
 }
 
 export const Input: React.FC<InputProps> = ({
+  id,
   label,
   name,
   type = "text",
@@ -29,7 +31,7 @@ export const Input: React.FC<InputProps> = ({
         {label}
       </label>
       <input
-        id={name}
+        id={id ||name}
         name={name}
         type={type}
         value={value}

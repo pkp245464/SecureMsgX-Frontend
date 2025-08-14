@@ -1,5 +1,6 @@
 // components/ticket/TicketDetails.tsx
 import React from 'react';
+import Link from 'next/link';
 import { TicketCreationResponse } from '@/types/ticket';
 import { Button } from '@/app/components/ui/button';
 import { formatDate, calculateDuration, formatTimeRange } from '@/app/utils/timeUtils';
@@ -120,6 +121,20 @@ export const TicketDetails: React.FC<TicketDetailsProps> = ({ ticket, onClose })
           </div>
         </div>
       )}
+
+      <div className="pt-4 border-t border-gray-200">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4">Danger Zone</h4>
+        <div className="bg-red-50 p-4 rounded-lg">
+          <p className="text-red-800 mb-4">
+            Deleting this ticket will permanently remove it and all its content. This action cannot be undone.
+          </p>
+          <Link href={`/delete-ticket?ticketId=${ticket.ticketId}`}>
+            <Button variant="secondary" className="bg-red-600 hover:bg-red-700 text-white">
+              Delete This Ticket
+            </Button>
+          </Link>
+        </div>
+      </div>
 
         {/* Actions */}
          <div className="flex justify-center space-x-4 pt-4">

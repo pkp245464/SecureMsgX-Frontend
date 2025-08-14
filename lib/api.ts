@@ -157,3 +157,48 @@ export const postReply = async (data: PostReplyRequest): Promise<PostReplyRespon
     throw new Error("Network error while posting reply");
   }
 };
+
+
+export const deleteTicket = async (ticketId: string): Promise<{ success: boolean, message: string }> => {
+  try {
+    const response = await axios.delete(
+      `${API_URL}/doors-of-durin/sigil-scrolls/delete/${ticketId}`
+    );
+    
+    // Handle success case
+    if (response.status === 200) {
+      return {
+        success: true,
+        message: (response.data as { message?: string }).message || `Ticket ID: ${ticketId} has been permanently deleted.`
+      };
+    }
+    
+    // Handle other 2xx statuses
+    return {
+      success: false,
+      message: (response.data as { message?: string }).message || "Unexpected response from server"
+    };
+    
+  } catch (error: any) {
+    // Handle 404 specifically
+    if (error.response?.status === 404) {
+      return {
+        success: false,
+        message: "Ticket not found. It may have already been deleted or never existed."
+      };
+    }
+    
+    // Handle other errors
+    if (error.response) {
+      return {
+        success: false,
+        message: error.response.data.message || "Failed to delete ticket"
+      };
+    }
+    
+    return {
+      success: false,
+      message: "Network error while deleting ticket"
+    };
+  }
+};
