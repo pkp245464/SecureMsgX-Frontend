@@ -134,3 +134,11 @@ export interface PostReplyResponse {
   replyId: string;
   status: string;
 }
+
+// API usage metric
+export interface ApiUsageMetric {
+  http_method: string;
+  api_endpoint: string;
+  ticket_type: string;
+  hit_count: number;
+}

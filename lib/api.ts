@@ -10,7 +10,8 @@ import type { TicketCreationRequest,
   UnifiedViewRequest,
   ViewTicketResponse ,
   PostReplyRequest,
-  PostReplyResponse
+  PostReplyResponse,
+  ApiUsageMetric
 } from '@/types/ticket';
 
 // Define ConversationNode type (adjust fields as needed or import from your types)
@@ -200,5 +201,18 @@ export const deleteTicket = async (ticketId: string): Promise<{ success: boolean
       success: false,
       message: "Network error while deleting ticket"
     };
+  }
+};
+
+
+export const fetchApiUsageMetrics = async (): Promise<ApiUsageMetric[]> => {
+  try {
+    const response = await axios.get(
+      `${API_URL}/doors-of-durin/sigil-scrolls/api-usage-metrics`
+    );
+    return response.data as ApiUsageMetric[];
+  } catch (error: any) {
+    console.error('Failed to fetch API usage metrics:', error);
+    throw error;
   }
 };

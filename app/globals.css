@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .bg-grid-pattern {
+    background-image: 
+      linear-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56, 189, 248, 0.1) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  
+  .bg-radial-gradient {
+    background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.05) 0%, rgba(0,0,0,0) 70%);
+  }
+  
+  .glow-text {
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.7), 0 0 20px rgba(139, 92, 246, 0.5);
+  }
+  
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+}
